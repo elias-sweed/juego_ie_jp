@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego Interactivo: I.E. Juan Jiménez Pimentel</title>
+    <style>
+        :root {
+            /* Colores Institucionales: Azul, Rojo, Amarillo */
+            --primary-blue: #003399;
+            --secondary-yellow: #FFCC00;
+            --accent-red: #CC0000;
+            
+            --background: #f0f2f5;
+            --surface: #FFFFFF;
+            --text: #1a1a1a;
+            --correct: #2E7D32;
+            --incorrect: #D32F2F;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-container {
+            background: var(--surface);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 750px;
+            padding: 30px;
+            box-sizing: border-box;
+            position: relative;
+            border-top: 10px solid var(--primary-blue);
+            border-bottom: 10px solid var(--accent-red);
+        }
+
+        /* Espacio para el Logo */
+        .header-logo {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .header-logo img {
+            max-height: 100px;
+            width: auto;
+        }
+
+        h1 {
+            color: var(--primary-blue);
+            text-align: center;
+            font-size: 24px;
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        .meta-info {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 20px;
+            background-color: var(--secondary-yellow);
+            padding: 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .progress-bar-container {
+            background: #ddd;
+            border-radius: 10px;
+            height: 14px;
+            width: 100%;
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: 1px solid #ccc;
+        }
+
+        .progress-bar {
+            background: linear-gradient(to right, var(--primary-blue), var(--accent-red));
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .question-box {
+            margin-bottom: 25px;
+        }
+
+        .question-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-left: 5px solid var(--accent-red);
+            padding-left: 15px;
+        }
+
+        /* Tipos de interacción */
+        .options-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .option-item {
+            background: #fff;
+            border: 2px solid var(--primary-blue);
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            font-weight: 500;
+        }
+
+        .option-item:hover {
+            background: #eef2ff;
+            transform: translateX(5px);
+        }
+
+        .option-item input {
+            margin-right: 15px;
+            accent-color: var(--primary-blue);
+        }
+
+        .select-blank {
+            padding: 8px 12px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 2px solid var(--primary-blue);
+            background-color: #fff;
+            font-weight: bold;
+        }
+
+        .match-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .match-label {
+            font-weight: 600;
+            width: 50%;
+            color: var(--primary-blue);
+        }
+
+        .sort-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+        }
+
+        .sort-btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            color: white;
+            transition: transform 0.1s;
+        }
+
+        .sort-btn.good { background-color: var(--primary-blue); }
+        .sort-btn.bad { background-color: var(--accent-red); }
+        .sort-btn:active { transform: scale(0.95); }
+
+        .action-btn {
+            background: var(--accent-red);
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 15px;
+            display: none;
+            box-shadow: 0 4px 0 #800000;
+        }
+
+        .action-btn:active {
+            box-shadow: none;
+            transform: translateY(4px);
+        }
+
+        .feedback {
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+            border: 2px solid transparent;
+        }
+
+        .feedback.correct-bg { background-color: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .feedback.incorrect-bg { background-color: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+
+        /* Resultados */
+        .result-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .score-circle {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            color: var(--secondary-yellow);
+            font-size: 40px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 20px auto;
+            border: 5px solid var(--accent-red);
+        }
+
+        .result-msg {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 25px;
+            line-height: 1.4;
+        }
+
+        .retry-btn {
+            background: var(--secondary-yellow);
+            color: #000;
+            border: 2px solid var(--primary-blue);
+            padding: 16px 32px;
+            font-size: 18px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<div class="game-container">
+    <div class="header-logo">
+        <img src="logo.png" alt="Logo I.E. Juan Jiménez Pimentel">
+    </div>
+    
+    <h1>Cuidamos juntos nuestra escuela</h1>
+    <div class="meta-info">I.E. Juan Jiménez Pimentel | Docente: Anita Cabrera Arévalo | 2° "A"</div>
+
+    <div class="progress-bar-container">
+        <div id="progress" class="progress-bar"></div>
+    </div>
+
+    <div id="quiz-panel">
+        <div class="question-box">
+            <div id="question-text" class="question-text">Cargando desafío...</div>
+            <div id="interaction-area"></div>
+        </div>
+        <button id="validate-btn" class="action-btn" onclick="checkComplexAnswer()">VERIFICAR RESPUESTA</button>
+        <div id="feedback-box" class="feedback"></div>
+    </div>
+
+    <div id="result-panel" class="result-screen">
+        <h2>REPORTE FINAL</h2>
+        <div id="score-display" class="score-circle">0/50</div>
+        <div id="result-message" class="result-msg"></div>
+        <div id="retry-area"></div>
+    </div>
+</div>
+
+<script>
+    // Banco de datos (50 preguntas)
+    const dataset = [
+        // 1-10: Opción Múltiple
+        { type: "single", q: "¿Cuál es el nombre de la Institución Educativa de la sesión?", options: ["Juan Jiménez Pimentel", "Sara Antúnez de Mayolo", "Ramón Castilla"], ans: 0 },
+        { type: "single", q: "¿Cómo se llama la profesora del aula de 2° 'A'?", options: ["Profesora Sara", "Anita Cabrera Arévalo", "Mercedes Pimentel"], ans: 1 },
+        { type: "single", q: "¿Qué área curricular se desarrolla en esta sesión?", options: ["Matemática", "Personal Social", "Ciencia y Tecnología"], ans: 1 },
+        { type: "single", q: "¿Qué profesora observó a los niños arrojando basura en los pasillos?", options: ["La profesora Sara", "La profesora Anita", "La profesora Carmen"], ans: 0 },
+        { type: "single", q: "¿Qué tipo de residuos se observaron tirados en los pasillos y jardines?", options: ["Papeles de exámenes viejos", "Botellas, cáscaras de frutas y envolturas", "Ropa vieja y cartones"], ans: 1 },
+        { type: "single", q: "¿Qué instrumento se menciona al final de la matriz para evaluar el logro?", options: ["Examen escrito", "Ficha de autoevaluación", "Lista de cotejo"], ans: 2 },
+        { type: "single", q: "¿Qué enfoque transversal se trabaja directamente con el cuidado del planeta?", options: ["Enfoque ambiental", "Enfoque intercultural", "Enfoque de igualdad de género"], ans: 0 },
+        { type: "single", q: "¿Cuál es la competencia de Personal Social que busca que interactuemos con respeto?", options: ["Gestiona responsablemente el espacio", "Convive y participa democráticamente", "Construye su identidad"], ans: 1 },
+        { type: "single", q: "¿Cómo se siente un estudiante en un espacio escolar limpio y ordenado?", options: ["Molesto y aburrido", "Feliz, cómodo y contento", "Triste y preocupado"], ans: 1 },
+        { type: "single", q: "¿Qué accidente físico directo puede causar una cáscara de plátano en el suelo?", options: ["Una herida cortante", "Un resbalón peligroso", "Una quemadura"], ans: 1 },
+
+        // 11-20: Selección Múltiple
+        { type: "multiple", q: "Marcar los animales peligrosos e insectos que aparecen cuando se acumula basura:", options: ["Mariposas", "Moscas", "Cucarachas", "Ratones"], ans: [1, 2, 3] },
+        { type: "multiple", q: "Marcar los objetos o recursos indicados para la preparación de la sesión:", options: ["Fichas adaptadas de la actividad", "Imágenes y anexos impresos", "Laptops para cada alumno"], ans: [0, 1] },
+        { type: "multiple", q: "Selecciona las envolturas consideradas peligrosas porque nos hacen resbalar al pisarlas:", options: ["Envolturas de galletas", "Hojas secas de árbol", "Envolturas de caramelos"], ans: [0, 2] },
+        { type: "multiple", q: "Marcar las capacidades de la competencia 'Convive democráticamente':", options: ["Interactúa con todas las personas", "Construye normas y asume acuerdos", "Usa herramientas mecánicas"], ans: [0, 1] },
+        { type: "multiple", q: "Selecciona las acciones observables del Enfoque Ambiental:", options: ["Colaborar con el bienestar y calidad de vida", "Evaluar los impactos y costos ambientales", "Ignorar las acciones cotidianas"], ans: [0, 1] },
+        { type: "multiple", q: "Marcar los acuerdos de convivencia propuestos en la sesión:", options: ["Levantar la mano para participar", "Gritar para ser escuchado", "Respetar las opiniones y escuchar a los demás"], ans: [0, 2] },
+        { type: "multiple", q: "Selecciona los criterios de evaluación explícitos de la sesión:", options: ["Participa activamente en la actividad", "Respeta normas y acuerdos", "Demuestra responsabilidad en el cuidado ambiental"], ans: [0, 1, 2] },
+        { type: "multiple", q: "Marcar los recipientes peligrosos que acumulan agua y generan nidos de zancudos si se dejan tirados:", options: ["Platos descartables", "Bolsas de chupetes", "Vasos o tazas abandonadas"], ans: [0, 2] },
+        { type: "multiple", q: "Identifica qué desempeños autónomos se esperan del estudiante:", options: ["Organiza estrategias en función del tiempo", "Revisa la aplicación de sus estrategias", "Esperar que el docente haga todo"], ans: [0, 1] },
+        { type: "multiple", q: "Selecciona los materiales que utilizarán los estudiantes en sus carpetas:", options: ["Cuaderno u hojas de reúso", "Lapicero, lápiz y colores", "Pintura acrílica industrial"], ans: [0, 1] },
+
+        // 21-30: Completar
+        { type: "fill", q: "Hoy aprenderemos a trabajar en {blank} para mantener limpia nuestra escuela.", options: ["equipo", "solitario", "silencio"], ans: "equipo" },
+        { type: "fill", q: "Los niños deben usar la bolsita {blank} para recolectar de manera adecuada sus residuos.", options: ["residual", "decorativa", "de juguete"], ans: "residual" },
+        { type: "fill", q: "Si tiramos la basura en lugares inadecuados la escuela se pone sucia y {blank}.", options: ["hermosa", "fea", "divertida"], ans: "fea" },
+        { type: "fill", q: "Las botellas tiradas se llenan de agua convirtiéndose en nidos de {blank}.", options: ["zancudos", "abejas", "palomas"], ans: "zancudos" },
+        { type: "fill", q: "Evitamos la contaminación del planeta y no evitamos las {blank} si limpiamos.", options: ["enfermedades", "alegrías", "clases"], ans: "enfermedades" },
+        { type: "fill", q: "Gestiona su aprendizaje de manera {blank} es una competencia transversal.", options: ["autónoma", "obligada", "pasiva"], ans: "autónoma" },
+        { type: "fill", q: "Para participar correctamente debemos {blank} la mano en la clase.", options: ["levantar", "esconder", "golpear"], ans: "levantar" },
+        { type: "fill", q: "Debemos demostrar nuestra buena {blank} desde la escuela.", options: ["educación", "fuerza", "velocidad"], ans: "educación" },
+        { type: "fill", q: "Las personas se quedan {blank} al ver que los espacios comunes están sucios.", options: ["descontentas", "felices", "emocionadas"], ans: "descontentas" },
+        { type: "fill", q: "La Tierra es el hogar que compartimos todos los seres {blank}.", options: ["vivos", "invisibles", "lejanos"], ans: "vivos" },
+
+        // 31-40: Relacionar
+        { type: "match", q: "Une cada acción con el lugar correcto donde debe realizarse:", labels: ["Tirar basura", "Botar basura", "Limpiar"], options: ["En el tacho", "Al suelo", "El aula"], correctMap: { "Tirar basura": "Al suelo", "Botar basura": "En el tacho", "Limpiar": "El aula" } },
+        { type: "match", q: "Relaciona la plaga con su causa o consecuencia:", labels: ["Moscas y ratones", "Agua acumulada", "Cáscaras de fruta"], options: ["Nido de zancudos", "Resbalón y caídas", "Aparecen por suciedad"], correctMap: { "Moscas y ratones": "Aparecen por suciedad", "Agua acumulada": "Nido de zancudos", "Cáscaras de fruta": "Resbalón y caídas" } },
+        { type: "match", q: "Empareja los datos informativos de la sesión:", labels: ["2° 'A'", "Anita Cabrera", "Juan Jiménez P."], options: ["Docente", "I.E.", "Grado y Sección"], correctMap: { "2° 'A'": "Grado y Sección", "Anita Cabrera": "Docente", "Juan Jiménez P.": "I.E." } },
+        { type: "match", q: "Relaciona los momentos pedagógicos con su tiempo o fin:", labels: ["Inicio", "Evidencia", "Instrumento"], options: ["Lista de cotejo", "Jornada de limpieza", "Aproximadamente 20min"], correctMap: { "Inicio": "Aproximadamente 20min", "Evidencia": "Jornada de limpieza", "Instrumento": "Lista de cotejo" } },
+        { type: "match", q: "Asocia cada frase con el valor ambiental:", labels: ["Cuidar el agua", "Usar bolsita residual", "Trabajo colaborativo"], options: ["Con tus compañeros", "Evitar tirar al suelo", "Bienestar de generaciones"], correctMap: { "Cuidar el agua": "Bienestar de generaciones", "Usar bolsita residual": "Evitar tirar al suelo", "Trabajo colaborativo": "Con tus compañeros" } },
+        { type: "match", q: "Une el problema con el desecho correspondiente:", labels: ["Envolturas de galletas", "Platos descartables", "Cáscaras de plátano"], options: ["Peligro de resbalar al pisar", "Nido de vectores de salud", "Resbalón directo en el suelo"], correctMap: { "Envolturas de galletas": "Peligro de resbalar al pisar", "Platos descartables": "Nido de vectores de salud", "Cáscaras de plátano": "Resbalón directo en el suelo" } },
+        { type: "match", q: "Empareja los componentes curriculares:", labels: ["Personal Social", "Enfoque Ambiental", "Lista de cotejo"], options: ["Área Curricular", "Enfoque Transversal", "Evaluación"], correctMap: { "Personal Social": "Área Curricular", "Enfoque Ambiental": "Enfoque Transversal", "Lista de cotejo": "Evaluación" } },
+        { type: "match", q: "Relaciona las actitudes del estudiante:", labels: ["Respeta opiniones", "Propone estrategias", "Usa tachos"], options: ["Cuidado ambiental", "Convivencia democrática", "Aprendizaje autónomo"], correctMap: { "Respeta opiniones": "Convivencia democrática", "Propone estrategias": "Aprendizaje autónomo", "Usa tachos": "Cuidado ambiental" } },
+        { type: "match", q: "Une el estado del aula con la emoción del niño:", labels: ["Aula limpia", "Aula sucia", "Aula desordenada"], options: ["Feliz y cómodo", "Triste y descontento", "Molesto o enojado"], correctMap: { "Aula limpia": "Feliz y cómodo", "Aula sucia": "Triste y descontento", "Aula desordenada": "Molesto o enojado" } },
+        { type: "match", q: "Relaciona las fases de la sesión:", labels: ["Bienvenida", "Conflicto cognitivo", "Criterios"], options: ["Planteamiento de pregunta", "Oración dirigida", "Explicación comprensible"], correctMap: { "Bienvenida": "Oración dirigida", "Conflicto cognitivo": "Planteamiento de pregunta", "Criterios": "Explicación comprensible" } },
+
+        // 41-50: Clasificar
+        { type: "sort", q: "Clasifica esta acción: 'Arrojar botellas plásticas en los pasillos de la escuela'", ans: "Irresponsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Guardar las envolturas en la bolsita residual propia'", ans: "Responsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Levantar la mano ordenadamente para dar tu opinión'", ans: "Responsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Dejar platos descartables con agua de lluvia en los jardines'", ans: "Irresponsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Participar activamente en la jornada de limpieza escolar'", ans: "Responsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Tirar las cáscaras de mandarina debajo de las carpetas'", ans: "Irresponsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Respetar las opiniones de los compañeros aunque piensen diferente'", ans: "Responsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Dejar las envolturas de caramelos tiradas en las canchas de fútbol'", ans: "Irresponsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Colaborar con el equipo para mantener el salón limpio y ordenado'", ans: "Responsable" },
+        { type: "sort", q: "Clasifica esta acción: 'Ignorar las indicaciones de limpieza de la profesora Anita'", ans: "Irresponsable" }
+    ];
+
+    let currentIdx = 0;
+    let score = 0;
+    const totalQuestions = dataset.length;
+
+    function initGame() {
+        currentIdx = 0;
+        score = 0;
+        document.getElementById("quiz-panel").style.display = "block";
+        document.getElementById("result-panel").style.display = "none";
+        showQuestion();
+    }
+
+    function showQuestion() {
+        const progressPercent = (currentIdx / totalQuestions) * 100;
+        document.getElementById("progress").style.width = progressPercent + "%";
+
+        const qData = dataset[currentIdx];
+        const textContainer = document.getElementById("question-text");
+        const area = document.getElementById("interaction-area");
+        const validateBtn = document.getElementById("validate-btn");
+        const feedback = document.getElementById("feedback-box");
+
+        area.innerHTML = "";
+        feedback.style.display = "none";
+        validateBtn.style.display = "none";
+
+        textContainer.innerText = `${qData.q}`;
+
+        if (qData.type === "single") {
+            const ul = document.createElement("ul");
+            ul.className = "options-list";
+            qData.options.forEach((opt, idx) => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerText = opt;
+                li.onclick = () => selectSingle(idx);
+                ul.appendChild(li);
+            });
+            area.appendChild(ul);
+        } else if (qData.type === "multiple") {
+            validateBtn.style.display = "block";
+            const ul = document.createElement("ul");
+            ul.className = "options-list";
+            qData.options.forEach((opt, idx) => {
+                const li = document.createElement("li");
+                li.className = "option-item";
+                li.innerHTML = `<input type="checkbox" value="${idx}"> <span>${opt}</span>`;
+                li.onclick = (e) => {
+                    if(e.target.tagName !== 'INPUT') {
+                        const cb = li.querySelector('input');
+                        cb.checked = !cb.checked;
+                    }
+                };
+                ul.appendChild(li);
+            });
+            area.appendChild(ul);
+        } else if (qData.type === "fill") {
+            validateBtn.style.display = "block";
+            const parts = qData.q.split("{blank}");
+            textContainer.innerHTML = parts[0];
+            const select = document.createElement("select");
+            select.className = "select-blank";
+            select.id = "fill-select";
+            const defaultOpt = document.createElement("option");
+            defaultOpt.text = "-- elegir --";
+            defaultOpt.value = "";
+            select.appendChild(defaultOpt);
+            qData.options.forEach(opt => {
+                const o = document.createElement("option");
+                o.text = opt;
+                o.value = opt;
+                select.appendChild(o);
+            });
+            textContainer.appendChild(select);
+            if(parts[1]) textContainer.appendChild(document.createTextNode(parts[1]));
+        } else if (qData.type === "match") {
+            validateBtn.style.display = "block";
+            qData.labels.forEach(label => {
+                const row = document.createElement("div");
+                row.className = "match-row";
+                const span = document.createElement("span");
+                span.className = "match-label";
+                span.innerText = label;
+                const select = document.createElement("select");
+                select.className = "match-select";
+                select.setAttribute("data-label", label);
+                const defaultOpt = document.createElement("option");
+                defaultOpt.text = "?";
+                defaultOpt.value = "";
+                select.appendChild(defaultOpt);
+                qData.options.forEach(opt => {
+                    const o = document.createElement("option");
+                    o.text = opt;
+                    o.value = opt;
+                    select.appendChild(o);
+                });
+                row.appendChild(span);
+                row.appendChild(select);
+                area.appendChild(row);
+            });
+        } else if (qData.type === "sort") {
+            const container = document.createElement("div");
+            container.className = "sort-container";
+            const btnGood = document.createElement("button");
+            btnGood.className = "sort-btn good";
+            btnGood.innerText = "Responsable";
+            btnGood.onclick = () => selectSort("Responsable");
+            const btnBad = document.createElement("button");
+            btnBad.className = "sort-btn bad";
+            btnBad.innerText = "Irresponsable";
+            btnBad.onclick = () => selectSort("Irresponsable");
+            container.appendChild(btnGood);
+            container.appendChild(btnBad);
+            area.appendChild(container);
+        }
+    }
+
+    function selectSingle(idx) {
+        const qData = dataset[currentIdx];
+        const isCorrect = (idx === qData.ans);
+        if (isCorrect) score++;
+        showFeedback(isCorrect);
+    }
+
+    function selectSort(value) {
+        const qData = dataset[currentIdx];
+        const isCorrect = (value === qData.ans);
+        if (isCorrect) score++;
+        showFeedback(isCorrect);
+    }
+
+    function checkComplexAnswer() {
+        const qData = dataset[currentIdx];
+        let isCorrect = true;
+        if (qData.type === "multiple") {
+            const checkboxes = document.querySelectorAll("#interaction-area input[type='checkbox']");
+            let selected = [];
+            checkboxes.forEach(cb => { if (cb.checked) selected.push(parseInt(cb.value)); });
+            isCorrect = (selected.length === qData.ans.length && qData.ans.every(val => selected.includes(val)));
+        } else if (qData.type === "fill") {
+            isCorrect = (document.getElementById("fill-select").value === qData.ans);
+        } else if (qData.type === "match") {
+            const selects = document.querySelectorAll(".match-select");
+            selects.forEach(select => {
+                if (qData.correctMap[select.getAttribute("data-label")] !== select.value) isCorrect = false;
+            });
+        }
+        if (isCorrect) score++;
+        showFeedback(isCorrect);
+    }
+
+    function showFeedback(isCorrect) {
+        const fb = document.getElementById("feedback-box");
+        fb.style.display = "block";
+        fb.innerText = isCorrect ? "¡CORRECTO! +1 PUNTO" : "INCORRECTO";
+        fb.className = `feedback ${isCorrect ? 'correct-bg' : 'incorrect-bg'}`;
+        document.getElementById("interaction-area").style.pointerEvents = "none";
+        if(document.getElementById("validate-btn")) document.getElementById("validate-btn").style.display = "none";
+        setTimeout(() => {
+            document.getElementById("interaction-area").style.pointerEvents = "auto";
+            nextQuestion();
+        }, 1200);
+    }
+
+    function nextQuestion() {
+        currentIdx++;
+        if (currentIdx < totalQuestions) showQuestion();
+        else endGame();
+    }
+
+    function endGame() {
+        document.getElementById("quiz-panel").style.display = "none";
+        document.getElementById("result-panel").style.display = "block";
+        document.getElementById("progress").style.width = "100%";
+        document.getElementById("score-display").innerText = `${score}/50`;
+        const msg = document.getElementById("result-message");
+        const retryArea = document.getElementById("retry-area");
+        if (score >= 35) {
+            msg.innerHTML = "¡EXCELENTE TRABAJO! <br> Has aprobado con éxito el compromiso ambiental de la I.E. Juan Jiménez Pimentel.";
+            msg.style.color = "var(--primary-blue)";
+        } else {
+            msg.innerHTML = "NECESITAS REPASAR MÁS. <br> No has alcanzado el puntaje mínimo de aprobación (35/50).";
+            msg.style.color = "var(--accent-red)";
+            const btn = document.createElement("button");
+            btn.className = "retry-btn";
+            btn.innerText = "REINTENTAR AHORA";
+            btn.onclick = initGame;
+            retryArea.appendChild(btn);
+        }
+    }
+
+    window.onload = initGame;
+</script>
+</body>
+</html>
